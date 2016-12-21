@@ -1,0 +1,22 @@
+version: '2'
+services:
+  doqtl:
+    image: mattjvincent/rqtlapi
+    command: /api/qtlapi.R
+    volumes:
+     - ./data:/data
+     - ./R:/api
+    restart: always
+    ports:
+     - "8000"
+  loadbalancer:
+    image: 'dockercloud/haproxy:latest'
+    environment:
+      - TIMEOUT=connect 5000, client 300000, server 300000 
+    links:
+      - doqtl
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 18889:80
+      - 11936:1936
