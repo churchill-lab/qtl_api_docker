@@ -1,8 +1,6 @@
 FROM rocker/hadleyverse:3.3.2
 MAINTAINER Matthew Vincent <mvincent@jax.org>
 
-RUN alias make='make -j'
-
 RUN apt-get update -qq && apt-get install -y \
   apt-utils \
   git-core \
@@ -14,10 +12,8 @@ RUN R -e 'devtools::install_github(paste0("rqtl/qtl2", c("geno", "scan", "plot",
 RUN R -e 'devtools::install_github("simecek/intermediate")'
 
 ADD plumber_runner.R /opt/R/plumber_runner.R
-ADD default.R /opt/R/default.R
 
 EXPOSE 8000
 
 ENTRYPOINT ["/usr/local/bin/Rscript", "/opt/R/plumber_runner.R"]
-CMD ["/opt/R/default.R"]
 

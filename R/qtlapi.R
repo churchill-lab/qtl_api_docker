@@ -1,10 +1,7 @@
 #
-# Load the data file
-# This needs to be specific and have defined data elements that we will use below
+# ASSUMING that the Rdata file has already been loaded
 #
 
-
-load("/data/DO188_kidney.RData")
 
 # 
 # Load the libraries will we need
@@ -127,9 +124,16 @@ set_error <- function(res, code=400, message="Error") {
 http_options <- function(req, res) {
     # start the clock
     ptm <- proc.time()
-    
-    # TODO: passing back nonsense for now
-    to_return <- list(options=c(1,2,3))
+
+    data_levels <- ''
+    if (exists('annot.mrna')) {
+        data_levels <- c('mrna') 
+    }
+    if (exists('annot.protein')) {
+        data_levels <- c(data_levels, 'protein') 
+    }
+
+    to_return <- list(data_levels=data_levels)
     
     # stop the clock
     elapsed <- proc.time() - ptm

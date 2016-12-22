@@ -2,7 +2,7 @@ version: '2'
 services:
   doqtl:
     image: mattjvincent/rqtlapi
-    command: /api/qtlapi.R
+    command: /api/${API} /data/${DATA}
     volumes:
      - ./data:/data
      - ./R:/api
@@ -12,7 +12,9 @@ services:
   loadbalancer:
     image: 'dockercloud/haproxy:latest'
     environment:
-      - TIMEOUT=connect 5000, client 300000, server 300000 
+      - TIMEOUT=connect 5000, client 300000, server 300000
+    depends_on: 
+      - doqtl 
     links:
       - doqtl
     volumes:
