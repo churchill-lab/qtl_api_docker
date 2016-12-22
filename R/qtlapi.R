@@ -24,8 +24,8 @@ library(RSQLite)
 db.file <- "/data/ccfoundersnps.sqlite"
 
 # Calculate the probs and create a map
-probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
-map <- map_df_to_list(map = snps, pos_column = "bp")
+#probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
+#map <- map_df_to_list(map = snps, pos_column = "bp")
 
 #
 # fix the value passed in via the web
@@ -133,7 +133,7 @@ http_options <- function(req, res) {
         data_levels <- c(data_levels, 'protein') 
     }
 
-    to_return <- list(data_levels=data_levels)
+    to_return <- list(data_levels=data_levels, covar_factors=covar_factors)
     
     # stop the clock
     elapsed <- proc.time() - ptm
@@ -418,6 +418,11 @@ http_expression_protein <- function(req, res, id) {
     
     # simple to get the expression data and tack on
     output <- cbind(annot.samples, expression=expr.protein[,idx])
+
+    ##
+    ## Need Petr to show me how to use covar_factors
+    ##
+    ## currently hardcoded for Sex, Age, Generation
     
     # the types of expression data
     t <- list(sex=levels(factor(annot.samples$Sex)), age=levels(factor(annot.samples$Age)), generation=levels(factor(annot.samples$Generation)))
@@ -449,15 +454,23 @@ http_get_ids <- function(req, res, id_type) {
     ptm <- proc.time()
 
     if (toupper(id_type) == "MRNA") {
-        to_return <- (list(ids=data.frame(gene_id=annot.mrna$id)))
-        # stop the clock
-        
+        to_return <- (list(ids=list()))
+
+        if (exists('annot.mrna')) {
+            to_return <- (list(ids=data.frame(gene_id=annot.mrna$id)))
+        }
+
+        # stop the clock        
         elapsed <- proc.time() - ptm
         track_time(req, elapsed["elapsed"])
         
         return (to_return)
     } else if (toupper(id_type) == "PROTEIN") {
-        to_return <- (list(ids=data.frame(protein_id=annot.protein$id, gene_id=annot.protein$gene_id)))
+        to_return <- (list(ids=data.frame(protein_id=list(), gene_id=list())))
+
+        if (exists('annot.protein')) {
+            to_return <- (list(ids=data.frame(protein_id=annot.protein$id, gene_id=annot.protein$gene_id)))
+        }
         
         # stop the clock
         elapsed <- proc.time() - ptm
