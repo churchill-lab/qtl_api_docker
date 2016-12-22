@@ -2,10 +2,9 @@ version: '2'
 services:
   doqtl:
     image: mattjvincent/rqtlapi
-    command: /api/${API} /data/${DATA}
     volumes:
-     - ./data:/data
-     - ./R:/api
+     - ./data:/api/data
+     - ./R:/api/R
     restart: always
     ports:
      - "8000"

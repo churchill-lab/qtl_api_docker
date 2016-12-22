@@ -11,9 +11,10 @@ RUN R -e 'install.packages(c("devtools", "yaml", "jsonlite", "dplyr", "data.tabl
 RUN R -e 'devtools::install_github(paste0("rqtl/qtl2", c("geno", "scan", "plot", "convert")))'
 RUN R -e 'devtools::install_github("simecek/intermediate")'
 
-ADD plumber_runner.R /opt/R/plumber_runner.R
+ADD run_plumber.R /api/run_plumber.R
+ADD start_server.sh /api/start_server.sh
 
 EXPOSE 8000
 
-ENTRYPOINT ["/usr/local/bin/Rscript", "/opt/R/plumber_runner.R"]
+CMD ["/api/start_server.sh"]
 
