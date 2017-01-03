@@ -24,8 +24,8 @@ library(RSQLite)
 db.file <- "/data/ccfoundersnps.sqlite"
 
 # Calculate the probs and create a map
-#probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
-#map <- map_df_to_list(map = snps, pos_column = "bp")
+probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
+map <- map_df_to_list(map = snps, pos_column = "bp")
 
 #
 # fix the value passed in via the web
@@ -379,16 +379,17 @@ http_expression_mrna <- function(req, res, id) {
 
     # simple to get the expression data and tack on
     output <- cbind(annot.samples, expression=expr.mrna[,idx])
-    
+    colnames(output)[1] <- ("mouse_id")
+
     # the types of expression data
     t <- list()
     for (f in covar_factors$column_name) {
-      stopifnot(!is.null(annot.samples[[f]]))
-      if (is.factor(annot.samples[[f]])) {
-        t[[f]] <- levels(annot.samples[[f]])
-      } else {
-        t[[f]] <- unique(annot.samples[[f]])
-      }
+        stopifnot(!is.null(annot.samples[[f]]))
+        if (is.factor(annot.samples[[f]])) {
+            t[[f]] <- levels(annot.samples[[f]])
+        } else {
+            t[[f]] <- unique(annot.samples[[f]])
+        }
     }
     
     to_return <- list(data=output, data_types=t)
@@ -423,21 +424,17 @@ http_expression_protein <- function(req, res, id) {
     
     # simple to get the expression data and tack on
     output <- cbind(annot.samples, expression=expr.protein[,idx])
-
-    ##
-    ## Need Petr to show me how to use covar_factors
-    ##
-    ## currently hardcoded for Sex, Age, Generation
+    colnames(output)[1] <- ("mouse_id")
     
     # the types of expression data
     for (f in covar_factors$column_name) {
-      stopifnot(!is.null(annot.samples[[f]]))
-      if (is.factor(annot.samples[[f]])) {
-        t[[f]] <- levels(annot.samples[[f]])
-      } else {
-        t[[f]] <- unique(annot.samples[[f]])
-      }
-    }    
+        stopifnot(!is.null(annot.samples[[f]]))
+        if (is.factor(annot.samples[[f]])) {
+            t[[f]] <- levels(annot.samples[[f]])
+        } else {
+            t[[f]] <- unique(annot.samples[[f]])
+        }
+    }
       
     to_return <- list(data=output, data_types=t)
     
