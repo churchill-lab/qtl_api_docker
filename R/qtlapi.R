@@ -21,7 +21,7 @@ library(RSQLite)
 # Define some global variables
 #
 
-db.file <- "/data/ccfoundersnps.sqlite"
+db.file <- "/api/data/ccfoundersnps.sqlite"
 
 # Calculate the probs and create a map
 probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
