@@ -381,10 +381,15 @@ http_expression_mrna <- function(req, res, id) {
     output <- cbind(annot.samples, expression=expr.mrna[,idx])
     
     # the types of expression data
-    t <- list(sex=levels(factor(annot.samples$Sex)), age=levels(factor(annot.samples$Age)), generation=levels(factor(annot.samples$Generation)))
-
-    # make the column names pretty
-    colnames(output) <- c("mouse_id", "sex", "generation", "age", "sample_number", "expression")
+    t <- list()
+    for (f in covar_factors$column_name) {
+      stopifnot(!is.null(annot.samples[[f]]))
+      if (is.factor(annot.samples[[f]])) {
+        t[[f]] <- levels(annot.samples[[f]])
+      } else {
+        t[[f]] <- unique(annot.samples[[f]])
+      }
+    }
     
     to_return <- list(data=output, data_types=t)
     
@@ -425,11 +430,15 @@ http_expression_protein <- function(req, res, id) {
     ## currently hardcoded for Sex, Age, Generation
     
     # the types of expression data
-    t <- list(sex=levels(factor(annot.samples$Sex)), age=levels(factor(annot.samples$Age)), generation=levels(factor(annot.samples$Generation)))
-    
-    # make the column names pretty
-    colnames(output) <- c("mouse_id", "sex", "generation", "age", "sample_number", "expression")
-    
+    for (f in covar_factors$column_name) {
+      stopifnot(!is.null(annot.samples[[f]]))
+      if (is.factor(annot.samples[[f]])) {
+        t[[f]] <- levels(annot.samples[[f]])
+      } else {
+        t[[f]] <- unique(annot.samples[[f]])
+      }
+    }    
+      
     to_return <- list(data=output, data_types=t)
     
     # stop the clock
