@@ -112,6 +112,26 @@ set_error <- function(res, code=400, message="Error") {
     res
 }
 
+#' Get the system info
+#'
+#' @param req the request object
+#' @param res the response object
+#'
+#' @return JSON of the system information
+#'
+#* @get /info
+http_info <- function(req, res) {
+    # start the clock
+    ptm <- proc.time()
+
+    to_return <- as.list(Sys.info())
+    
+    # stop the clock
+    elapsed <- proc.time() - ptm
+    track_time(req, elapsed["elapsed"])
+
+    return (to_return)
+}
 
 #' Get the options
 #'
