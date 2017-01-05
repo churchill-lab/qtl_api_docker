@@ -1,4 +1,4 @@
-FROM rocker/hadleyverse:3.3.2
+FROM rocker/r-ver:3.3.2
 MAINTAINER Matthew Vincent <mvincent@jax.org>
 
 RUN apt-get update -qq && apt-get install -y \

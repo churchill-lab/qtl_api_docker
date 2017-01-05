@@ -1,21 +1,21 @@
 version: '2'
 services:
-  api:
+  webapi:
     image: mattjvincent/rqtlapi
     volumes:
      - ./data:/api/data
      - ./R:/api/R
     ports:
-     - 8000
+     - "8000"
 
-  lb:
-    image: tutum/haproxy
+  haproxy:
+    image: dockercloud/haproxy:1.2.1
     ports:
-      - 18889:80
-      - 11936:1936
+      - "18889:80"
+      - "11936:1936"
     environment:
       - TIMEOUT=connect 5000, client 300000, server 300000
     links:
-      - api
+      - webapi
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock 
