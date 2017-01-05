@@ -9,7 +9,7 @@ services:
      - "8000"
 
   haproxy:
-    image: dockercloud/haproxy:1.2.1
+    image: dockercloud/haproxy:1.6.2
     ports:
       - "18889:80"
       - "11936:1936"
