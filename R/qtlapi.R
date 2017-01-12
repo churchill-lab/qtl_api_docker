@@ -447,6 +447,7 @@ http_expression_protein <- function(req, res, id) {
     colnames(output)[1] <- ("mouse_id")
     
     # the types of expression data
+    t <- list()
     for (f in covar_factors$column_name) {
         stopifnot(!is.null(annot.samples[[f]]))
         if (is.factor(annot.samples[[f]])) {
@@ -505,11 +506,34 @@ http_get_ids <- function(req, res, id_type) {
         return (to_return)
     } 
     
-
     return (set_error(res, 400, "Invalid id_type"))
 }
 
 
+#' Get the phenotypes
+#'
+#' @param req the request object
+#' @param res the response object
+#'
+#' @return phenotypes
+#'
+#* @get /phenotypes
+http_get_phenotypes <- function(req, res) {
+    # start the clock
+    ptm <- proc.time()
+
+    if (exists('annot.pheno')) {
+        to_return <- annot.pheno[which(annot.pheno$omit == FALSE),]
+
+        # stop the clock        
+        elapsed <- proc.time() - ptm
+        track_time(req, elapsed["elapsed"])
+        
+        return (to_return)
+    }
+
+    return (set_error(res, 400, "Invalid id_type"))
+}
 
 
 #' Perform on SNP Association mapping (protein)
