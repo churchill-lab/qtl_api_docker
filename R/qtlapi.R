@@ -16,6 +16,7 @@ library(qtl2geno)
 library(qtl2plot)
 library(qtl2scan)
 library(RSQLite)
+library(pryr)
 
 #
 # Define some global variables
@@ -26,6 +27,12 @@ db.file <- "/api/data/ccfoundersnps.sqlite"
 # Calculate the probs and create a map
 probs <- probs_doqtl_to_qtl2(genoprobs, snps, pos_column = "bp")
 map <- map_df_to_list(map = snps, pos_column = "bp")
+
+
+# we no longer are using genoprobs so free up some memory
+genoprobs_env <- where("genoprobs")
+rm(genoprobs, envir=genoprobs_env)
+gc()
 
 #
 # fix the value passed in via the web
@@ -193,7 +200,10 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
     
     # to regress local genotype, add neareast marker to covariates
     if (fix_boolean(regress_local)) {
-        addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
+        #addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
+        mkr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],1])
+        chr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],2])
+        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
     }
  
     # perform the scan using QTL2
@@ -245,7 +255,11 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
     
     # to regress local genotype, add neareast marker to covariates
     if (fix_boolean(regress_local)) {
-        addcovar <- cbind(addcovar, genoprobs[,-1,annot.protein$nearest_snp[idx]])
+        #addcovar <- cbind(addcovar, genoprobs[,-1,annot.protein$nearest_snp[idx]])
+        mkr_tmp = as.character(snps[annot.protein$nearest_snp[idx],1])
+        chr_tmp = as.character(snps[annot.protein$nearest_snp[idx],2])
+        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
+        
     }
     
     # perform the scan using QTL2
@@ -301,7 +315,10 @@ http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FAL
     
     # to regress local genotype, add neareast marker to covariates
     if (fix_boolean(regress_local)) {
-        addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
+        #addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
+        mkr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],1])
+        chr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],2])
+        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
     }
     
     if (!fix_boolean(blup)) {
@@ -353,6 +370,7 @@ http_mediate <- function(req, res, id, mid) {
 
     # get the marker index 
     mrkx <- which(snps$marker == mid)
+    chr_tmp = as.character(snps[mrkx,2])
 
     if (length(mrkx) == 0) {
         return (set_error(res, 400, paste0("mid not found: ", mid)))
@@ -366,7 +384,8 @@ http_mediate <- function(req, res, id, mid) {
                                 mediator=expr.mrna, 
                                 annotation=annot,
                                 covar=covar, 
-                                qtl.geno=genoprobs[,,mrkx], 
+                                #qtl.geno=genoprobs[,,mrkx], 
+                                qtl.geno=probs$probs[chr_tmp][,,mrkx], 
                                 verbose=FALSE)
     
     # stop the clock

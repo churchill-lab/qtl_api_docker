@@ -7,7 +7,7 @@ RUN apt-get update -qq && apt-get install -y \
   libssl-dev \
   libcurl4-gnutls-dev 
 
-RUN R -e 'install.packages(c("devtools", "yaml", "jsonlite", "dplyr", "data.table", "RcppEigen", "plumber", "RSQLite"))'
+RUN R -e 'install.packages(c("devtools", "pryr", "yaml", "jsonlite", "dplyr", "data.table", "RcppEigen", "plumber", "RSQLite"))'
 RUN R -e 'devtools::install_github(paste0("rqtl/qtl2", c("geno", "scan", "plot", "convert")))'
 RUN R -e 'devtools::install_github("simecek/intermediate")'
 
