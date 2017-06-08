@@ -576,7 +576,7 @@ http_get_phenotypes <- function(req, res) {
 #'
 #* @get /snpassoc/protein
 #* @post /snpassoc/protein
-http_snp_assoc_mapping <- function(req, res, id, chrom, location, window_size=500000, ncores=0) {
+http_snp_assoc_mappin_protein <- function(req, res, id, chrom, location, window_size=500000, ncores=0) {
 
     # start the clock
     ptm <- proc.time()
@@ -589,6 +589,7 @@ http_snp_assoc_mapping <- function(req, res, id, chrom, location, window_size=50
     #pos <- loc / 1000000.0
     
     idx <- which(annot.protein$id == id)
+    idx <- which(annot.mrna$id == annot.protein[idx,]$gene_id)
     
     if (length(idx) == 0) {
         return (set_error(res, 400, paste0("id not found: ", id)))
@@ -617,9 +618,12 @@ http_snp_assoc_mapping <- function(req, res, id, chrom, location, window_size=50
     my_db <- src_sqlite(db.file, create = FALSE)
     window.snps <- tbl(my_db, sql("SELECT * FROM snps")) %>%
         filter(chr==sel.chr, pos_Mbp>=window.range[1], pos_Mbp<=window.range[2]) %>%
+        arrange(pos_Mbp) %>%
         collect(n=Inf)
 
-    window.snps = as.data.frame(window.snps)
+    colnames(window.snps)[c(1,3)] = c("snp", "pos")
+    window.snps = index_snps(map = map, window.snps)
+    #window.snps = as.data.frame(window.snps)
 
     addcovar <- covar[,-1]
 
@@ -639,8 +643,14 @@ http_snp_assoc_mapping <- function(req, res, id, chrom, location, window_size=50
     # plotting with qtl2
     #plot_snpasso(out_snps)
 
-    to_return <- out_snps[['snpinfo']][[chrom]]
-    to_return$lod <- out_snps[['lod']][to_return$index]
+
+    map2 <- qtl2scan:::snpinfo_to_map(window.snps)
+    tmp <- qtl2plot:::expand_snp_results(out_snps, map2, window.snps)
+    scan1output <- tmp$lod
+    map2 <- tmp$map
+
+    to_return <- window.snps
+    to_return$lod <- tmp$lod[,1]
 
     # stop the clock
     elapsed <- proc.time() - ptm
@@ -703,9 +713,10 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
 
     # extract SNPs from the database
     my_db <- src_sqlite(db.file, create = FALSE)
-    window.snps <- tbl(my_db, sql(paste0("SELECT * FROM snps WHERE chr=",
-            sel.chr, " AND pos_Mbp>=", window.range[1], " AND pos_Mbp<=", window.range[2]))) %>%
-            collect(n = Inf)
+    window.snps <- tbl(my_db, sql("SELECT * FROM snps")) %>%
+        filter(chr==sel.chr, pos_Mbp>=window.range[1], pos_Mbp<=window.range[2]) %>%
+        arrange(pos_Mbp) %>%
+        collect(n=Inf)
 
     colnames(window.snps)[c(1,3)] = c("snp", "pos")
     window.snps = index_snps(map = map, window.snps)
