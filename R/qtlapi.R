@@ -203,7 +203,7 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
         #addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
         mkr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],1])
         chr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],2])
-        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
+        addcovar <- cbind(addcovar, probs[,chr_tmp][,-1,mkr_tmp])
     }
  
     # perform the scan using QTL2
@@ -258,7 +258,7 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
         #addcovar <- cbind(addcovar, genoprobs[,-1,annot.protein$nearest_snp[idx]])
         mkr_tmp = as.character(snps[annot.protein$nearest_snp[idx],1])
         chr_tmp = as.character(snps[annot.protein$nearest_snp[idx],2])
-        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
+        addcovar <- cbind(addcovar, probs[,chr_tmp][,-1,mkr_tmp])
         
     }
     
@@ -322,7 +322,7 @@ http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FAL
         #addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
         mkr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],1])
         chr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],2])
-        addcovar <- cbind(addcovar, probs$probs[[chr_tmp]][,-1,mkr_tmp])
+        addcovar <- cbind(addcovar, probs[,chr_tmp][,-1,mkr_tmp])
     }
     
     if (!fix_boolean(blup)) {
@@ -376,6 +376,7 @@ http_mediate <- function(req, res, id, mid) {
     # get the marker index 
     mrkx <- which(snps$marker == mid)
     chr_tmp = as.character(snps[mrkx,2])
+    print(chr_tmp)
 
     if (length(mrkx) == 0) {
         return (set_error(res, 400, paste0("mid not found: ", mid)))
@@ -383,6 +384,7 @@ http_mediate <- function(req, res, id, mid) {
 
     annot <- annot.mrna[,c("id", "symbol", "chr")]
     annot$pos <- annot.mrna$middle_point
+
     
     # perform the mediation
     to_return <- mediation.scan(target=expr.mrna[,idx],  
@@ -390,7 +392,7 @@ http_mediate <- function(req, res, id, mid) {
                                 annotation=annot,
                                 covar=covar, 
                                 #qtl.geno=genoprobs[,,mrkx], 
-                                qtl.geno=probs$probs[chr_tmp][,,mrkx], 
+                                qtl.geno=probs[[chr_tmp]][,,mid], 
                                 verbose=FALSE)
     
     # stop the clock
@@ -701,11 +703,13 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
 
     # extract SNPs from the database
     my_db <- src_sqlite(db.file, create = FALSE)
-    window.snps <- tbl(my_db, sql("SELECT * FROM snps")) %>%
-        filter(chr==sel.chr, pos_Mbp>=window.range[1], pos_Mbp<=window.range[2]) %>%
-        collect(n=Inf)
+    window.snps <- tbl(my_db, sql(paste0("SELECT * FROM snps WHERE chr=",
+            sel.chr, " AND pos_Mbp>=", window.range[1], " AND pos_Mbp<=", window.range[2]))) %>%
+            collect(n = Inf)
 
-    window.snps = as.data.frame(window.snps)
+    colnames(window.snps)[c(1,3)] = c("snp", "pos")
+    window.snps = index_snps(map = map, window.snps)
+    #window.snps = as.data.frame(window.snps)
 
     addcovar <- covar[,-1]
 
@@ -725,8 +729,14 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
     # plotting with qtl2
     #plot_snpasso(out_snps)
 
-    to_return <- out_snps[['snpinfo']][[chrom]]
-    to_return$lod <- out_snps[['lod']][to_return$index]
+
+    map2 <- qtl2scan:::snpinfo_to_map(window.snps)
+    tmp <- qtl2plot:::expand_snp_results(out_snps, map2, window.snps)
+    scan1output <- tmp$lod
+    map2 <- tmp$map
+
+    to_return <- window.snps
+    to_return$lod <- tmp$lod[,1]
 
     # stop the clock
     elapsed <- proc.time() - ptm
