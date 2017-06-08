@@ -215,7 +215,7 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
                    reml=TRUE))
     
     # return the data
-    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp$lod))
+    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp))
     
     # stop the clock
     elapsed <- proc.time() - ptm
@@ -271,7 +271,7 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
                    reml=TRUE))
     
     # return the data
-    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp$lod))
+    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp))
     
     # stop the clock
     elapsed <- proc.time() - ptm
@@ -289,12 +289,13 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
 #' @param regress_local TRUE to regress local genotype
 #' @param blup TRUE to perform Best Linear Unbiased Predictors 
 #' @param center TRUE to center around 0
+#' @param ncores number of cores to use (0=ALL)
 #'
 #' @return None
 #'
 #* @get /foundercoefs
 #* @post /foundercoefs
-http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FALSE, center=TRUE) {
+http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FALSE, center=TRUE, ncores=0) {
     # start the clock
     ptm <- proc.time()
 
@@ -309,6 +310,9 @@ http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FAL
     if (is.null(Glist[[chrom]])) {
         return (set_error(res, 400, paste0("chrom not found: ", chrom)))
     }
+
+    # make sure ncores is appropriate  
+    num_cores = nvl_integer(ncores, 0)
     
     # set covariates
     addcovar <- covar[,-1]
@@ -330,14 +334,15 @@ http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FAL
         temp <- scan1blup(genoprobs = probs[,chrom],
                           pheno = expr.mrna[,idx],
                           kinship=Glist[[chrom]],
-                          addcovar = covar)
+                          addcovar = covar,
+                          cores=num_cores)
     }
     
     if (fix_boolean(center)) {
-        temp$coef[,LETTERS[1:8]] <- temp$coef[,LETTERS[1:8]] - rowMeans(temp$coef[,LETTERS[1:8]], na.rm=TRUE)
+        temp[,LETTERS[1:8]] <- temp[,LETTERS[1:8]] - rowMeans(temp[,LETTERS[1:8]], na.rm=TRUE)
     }
 
-    to_return <- list(data=data.table(id=names(temp$map), chr=chrom, pos=temp$map, temp$coef[,LETTERS[1:8]]))
+    to_return <- list(data=data.table(id=names(map[[chrom]]), chr=chrom, pos=map[[chrom]], temp[,LETTERS[1:8]]))
     
     # stop the clock
     elapsed <- proc.time() - ptm
