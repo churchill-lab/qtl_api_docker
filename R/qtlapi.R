@@ -147,6 +147,13 @@ http_info <- function(req, res) {
 #'
 #' @return JSON object of the options
 #'
+#' Example:
+#'    {"data_levels":["mrna"],
+#'     "covar_factors":[{"column_name":"Diet","display_name":"Diet"},
+#'                      {"column_name":"Sex","display_name":"Sex"}
+#'                     ]
+#'    }
+#'
 #* @get /options
 http_options <- function(req, res) {
     # start the clock
@@ -177,7 +184,21 @@ http_options <- function(req, res) {
 #' @param regress_local TRUE to regress on local genotype, FALSE to not
 #' @param ncores number of cores to use (0=ALL)
 #'
-#' @return None
+#' @return JSON data of LOD scan
+#'
+#' Each element in the array is:
+#'
+#' id: string (Ensembl ID)
+#' chr: string
+#' pos: integer
+#' pheno1: numeric
+#'
+#' Example:
+#'     {"data":[{"id":"1_40055","chr":"1","pos":40055,"pheno1":2.4787},
+#'              {"id":"1_87283","chr":"1","pos":87283,"pheno1":2.4787},
+#'              ...
+#'              {"id":"1_134512","chr":"1","pos":134512,"pheno1":2.4787}
+#'             ]}
 #'
 #* @get /lodscan/mrna
 #* @post /lodscan/mrna
@@ -232,7 +253,22 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
 #' @param regress_local TRUE to regress on local genotype, FALSE to not
 #' @param ncores number of cores to use (0=ALL)
 #'
-#' @return None
+#' @return JSON data of LOD scan
+#'
+#' Each element in the array is:
+#'
+#' id: string (Ensembl ID)
+#' chr: string
+#' pos: integer
+#' pheno1: numeric
+#'
+#' Example:
+#'     {"data":[{"id":"1_40055","chr":"1","pos":40055,"pheno1":2.4787},
+#'              {"id":"1_87283","chr":"1","pos":87283,"pheno1":2.4787},
+#'              ...
+#'              {"id":"1_134512","chr":"1","pos":134512,"pheno1":2.4787}
+#'             ]}
+#'
 #'
 #* @get /lodscan/protein
 #* @post /lodscan/protein
@@ -291,7 +327,27 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
 #' @param center TRUE to center around 0
 #' @param ncores number of cores to use (0=ALL)
 #'
-#' @return None
+#' @return JSON data
+#'
+#' Each element in the array consists of:
+#'
+#' id: strieng (marker id)
+#' chr: string
+#' pos: numeric
+#' A: numeric
+#' B: numeric
+#' C: numeric
+#' D: numeric
+#' E: numeric
+#' F: numeric
+#' G: numeric
+#' H: numeric
+#'
+#' Example:
+#' {"data":[{"id":"2_78746","chr":"2","pos":0.0787,"A":-0.0667,"B":0.1492,"C":0.1148,"D":0.1812,"E":-0.0165,"F":0.0199,"G":-0.2083,"H":-0.1736},
+#'          ...
+#'          {"id":"2_120469","chr":"2","pos":0.1205,"A":-0.0667,"B":0.1492,"C":0.1148,"D":0.1812,"E":-0.0165,"F":0.0199,"G":-0.2083,"H":-0.1736}
+#'         ]}
 #'
 #* @get /foundercoefs
 #* @post /foundercoefs
@@ -360,6 +416,15 @@ http_foundercoefs <- function(req, res, id, chrom, regress_local=FALSE, blup=FAL
 #' @param id an Ensembl gene identifier
 #' @param mid a marker identifier
 #'
+#' return JSON data from mediation
+#'
+#' Example:
+#'
+#' [{"id":"ENSMUSG00000000001","symbol":"Gnai3","chr":"3","pos":108126713,"LOD":2.9505},
+#'  ...
+#'  {"id":"ENSMUSG00000000031","symbol":"H19","chr":"7","pos":142576836,"LOD":2.6687}
+#' ]
+#'
 #* @get /mediate
 #* @post /mediate
 http_mediate <- function(req, res, id, mid) {
@@ -409,7 +474,15 @@ http_mediate <- function(req, res, id, mid) {
 #' @param res the response object
 #' @param id an Ensembl gene identifier
 #'
-#' @return None
+#' @return JSON data
+#'
+#' JSON data is dependent upon covariates.
+#'
+#' Example:
+#'  {"data":[{"mouse_id":"F01","Sex":"F","Generation":"G4","Litter":2,"Diet":"hf","Coat.Color":"agouti","GenerationLitter":"G4_2","expression":0.2243,"_row":"F01"},
+#'           ...
+#'           {"mouse_id":"F02","Sex":"F","Generation":"G4","Litter":2,"Diet":"hf","Coat.Color":"black","GenerationLitter":"G4_2","expression":0.3498,"_row":"F02"}
+#'          ]
 #'
 #* @get /expression/mrna
 http_expression_mrna <- function(req, res, id) {
@@ -454,7 +527,15 @@ http_expression_mrna <- function(req, res, id) {
 #' @param res the response object
 #' @param id an Ensembl protein identifier
 #'
-#' @return None
+#' @return JSON data
+#'
+#' JSON data is dependent upon covariates.
+#'
+#' Example:
+#'  {"data":[{"mouse_id":"F01","Sex":"F","Generation":"G4","Litter":2,"Diet":"hf","Coat.Color":"agouti","GenerationLitter":"G4_2","expression":0.2243,"_row":"F01"},
+#'           ...
+#'           {"mouse_id":"F02","Sex":"F","Generation":"G4","Litter":2,"Diet":"hf","Coat.Color":"black","GenerationLitter":"G4_2","expression":0.3498,"_row":"F02"}
+#'          ]
 #'
 #* @get /expression/protein
 http_expression_protein <- function(req, res, id) {
@@ -499,7 +580,15 @@ http_expression_protein <- function(req, res, id) {
 #' @param res the response object
 #' @param id_type 'mrna' or 'protein'
 #'
-#' @return None
+#' @return JSON data
+#'
+#' Structure depends on the id_type.
+#'
+#' Example:
+#' id_type = mrna 
+#'     {"ids":[{"gene_id":"ENSMUSG00000000001"},{"gene_id":"ENSMUSG00000000031"},...{"gene_id":"ENSMUSG00000000049"}]}
+#' id_type = protein 
+#'     {"ids":[{"gene_id":"ENSMUSG00000000001", "protein_id":ENMUSP0000.."},...]}
 #'
 #* @get /ids
 http_get_ids <- function(req, res, id_type) {
@@ -536,32 +625,6 @@ http_get_ids <- function(req, res, id_type) {
 }
 
 
-#' Get the phenotypes
-#'
-#' @param req the request object
-#' @param res the response object
-#'
-#' @return phenotypes
-#'
-#* @get /phenotypes
-http_get_phenotypes <- function(req, res) {
-    # start the clock
-    ptm <- proc.time()
-
-    if (exists('annot.pheno')) {
-        to_return <- annot.pheno[which(annot.pheno$omit == FALSE),]
-
-        # stop the clock        
-        elapsed <- proc.time() - ptm
-        track_time(req, elapsed["elapsed"])
-        
-        return (to_return)
-    }
-
-    return (set_error(res, 400, "Invalid id_type"))
-}
-
-
 #' Perform on SNP Association mapping (protein)
 #'
 #' @param req the request object
@@ -572,7 +635,28 @@ http_get_phenotypes <- function(req, res) {
 #' @param window_size how many base pairs (before and after) to perform scan
 #' @param ncores number of cores to use (0=as many as there is)
 #'
-#' @return None
+#' @return JSON data
+#'
+#' An array of objects where each object is:
+#'     snp: string
+#'     chr: string
+#'     pos: decimal
+#'     alleles: string
+#'     sdp: integer
+#'     ensembl_gene: string
+#'     csq: string
+#'     index: integer
+#'     interval: integer
+#'     on_map: boolean
+#'     lod: decimal
+#'
+#' TODO: Trim the amount of data being passed back
+#'
+#' Example:
+#' [{"snp":"rs33090065","chr":"5","pos":128.2978,"alleles":"A|G","sdp":233,"ensembl_gene":"ENSMUSG00000034310","csq":"intron_variant","index":1,"interval":2823,"on_map":true,"lod":0.3721},
+#'  ...
+#'  {"snp":"rs266155287","chr":"5","pos":128.2978,"alleles":"C|T","sdp":128,"ensembl_gene":"ENSMUSG00000034310","csq":"intron_variant","index":2,"interval":2823,"on_map":false,"lod":0.3026}
+#' ]
 #'
 #* @get /snpassoc/protein
 #* @post /snpassoc/protein
@@ -581,14 +665,10 @@ http_snp_assoc_mappin_protein <- function(req, res, id, chrom, location, window_
     # start the clock
     ptm <- proc.time()
 
-    #sel.chr <- chrom
-    #loc <- nvl_integer(location, -1)
-    #if (loc == -1) {
-    #    return (set_error(res, 400, paste0("location is invalid: ", location)))
-    #}
-    #pos <- loc / 1000000.0
-    
+    # protein id
     idx <- which(annot.protein$id == id)
+
+    # replace with gene id
     idx <- which(annot.mrna$id == annot.protein[idx,]$gene_id)
     
     if (length(idx) == 0) {
@@ -636,18 +716,8 @@ http_snp_assoc_mappin_protein <- function(req, res, id, chrom, location, window_
     # finally the scan
     out_snps <- scan1(pheno=expr.mrna[,idx], kinship = Glist[[sel.chr]], genoprobs=snppr, addcovar=addcovar, cores=ncores)
 
-
-    #to_return <- list(data=data.table(id=out_snps$snpinfo, chr=snps$chr, pos=snps$pos, temp$lod))
-    #to_return <- list(id=out_snps$snpinfo, out_snps$lod)
-
-    # plotting with qtl2
-    #plot_snpasso(out_snps)
-
-
-    map2 <- qtl2scan:::snpinfo_to_map(window.snps)
-    tmp <- qtl2plot:::expand_snp_results(out_snps, map2, window.snps)
-    scan1output <- tmp$lod
-    map2 <- tmp$map
+    map_tmp <- qtl2scan:::snpinfo_to_map(window.snps)
+    tmp <- qtl2plot:::expand_snp_results(out_snps, map_tmp, window.snps)
 
     to_return <- window.snps
     to_return$lod <- tmp$lod[,1]
@@ -670,7 +740,28 @@ http_snp_assoc_mappin_protein <- function(req, res, id, chrom, location, window_
 #' @param window_size how many base pairs (before and after) to perform scan
 #' @param ncores number of cores to use (0=as many as there is)
 #'
-#' @return None
+#' @return JSON data
+#'
+#' An array of objects where each object is:
+#'     snp: string
+#'     chr: string
+#'     pos: decimal
+#'     alleles: string
+#'     sdp: integer
+#'     ensembl_gene: string
+#'     csq: string
+#'     index: integer
+#'     interval: integer
+#'     on_map: boolean
+#'     lod: decimal
+#'
+#' TODO: Trim the amount of data being passed back
+#'
+#' Example:
+#' [{"snp":"rs33090065","chr":"5","pos":128.2978,"alleles":"A|G","sdp":233,"ensembl_gene":"ENSMUSG00000034310","csq":"intron_variant","index":1,"interval":2823,"on_map":true,"lod":0.3721},
+#'  ...
+#'  {"snp":"rs266155287","chr":"5","pos":128.2978,"alleles":"C|T","sdp":128,"ensembl_gene":"ENSMUSG00000034310","csq":"intron_variant","index":2,"interval":2823,"on_map":false,"lod":0.3026}
+#' ]
 #'
 #* @get /snpassoc/mrna
 #* @post /snpassoc/mrna
@@ -679,13 +770,6 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
     # start the clock
     ptm <- proc.time()
 
-    #sel.chr <- chrom
-    #loc <- nvl_integer(location, -1)
-    #if (loc == -1) {
-    #    return (set_error(res, 400, paste0("location is invalid: ", location)))
-    #}
-    #pos <- loc / 1000000.0
-    
     idx <- which(annot.mrna$id == id)
     
     if (length(idx) == 0) {
@@ -733,18 +817,8 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
     # finally the scan
     out_snps <- scan1(pheno=expr.mrna[,idx], kinship = Glist[[sel.chr]], genoprobs=snppr, addcovar=addcovar, cores=ncores)
 
-
-    #to_return <- list(data=data.table(id=out_snps$snpinfo, chr=snps$chr, pos=snps$pos, temp$lod))
-    #to_return <- list(id=out_snps$snpinfo, out_snps$lod)
-
-    # plotting with qtl2
-    #plot_snpasso(out_snps)
-
-
-    map2 <- qtl2scan:::snpinfo_to_map(window.snps)
-    tmp <- qtl2plot:::expand_snp_results(out_snps, map2, window.snps)
-    scan1output <- tmp$lod
-    map2 <- tmp$map
+    map_tmp <- qtl2scan:::snpinfo_to_map(window.snps)
+    tmp <- qtl2plot:::expand_snp_results(out_snps, map_tmp, window.snps)
 
     to_return <- window.snps
     to_return$lod <- tmp$lod[,1]
@@ -755,6 +829,33 @@ http_snp_assoc_mapping_mrna <- function(req, res, id, chrom, location, window_si
     
     return (to_return)
     
+}
+
+#' Get the phenotypes
+#'
+#' @param req the request object
+#' @param res the response object
+#'
+#' NOT COMPLETED
+#'
+#' @return phenotypes
+#'
+#* @get /phenotypes
+http_get_phenotypes <- function(req, res) {
+    # start the clock
+    ptm <- proc.time()
+
+    if (exists('annot.pheno')) {
+        to_return <- annot.pheno[which(annot.pheno$omit == FALSE),]
+
+        # stop the clock        
+        elapsed <- proc.time() - ptm
+        track_time(req, elapsed["elapsed"])
+        
+        return (to_return)
+    }
+
+    return (set_error(res, 400, "Invalid id_type"))
 }
 
 
