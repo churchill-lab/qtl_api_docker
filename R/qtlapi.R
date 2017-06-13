@@ -441,7 +441,6 @@ http_mediate <- function(req, res, id, mid) {
     # get the marker index 
     mrkx <- which(snps$marker == mid)
     chr_tmp = as.character(snps[mrkx,2])
-    print(chr_tmp)
 
     if (length(mrkx) == 0) {
         return (set_error(res, 400, paste0("mid not found: ", mid)))
