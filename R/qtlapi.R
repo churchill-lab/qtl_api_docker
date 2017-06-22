@@ -194,10 +194,10 @@ http_options <- function(req, res) {
 #' pheno1: numeric
 #'
 #' Example:
-#'     {"data":[{"id":"1_40055","chr":"1","pos":40055,"pheno1":2.4787},
-#'              {"id":"1_87283","chr":"1","pos":87283,"pheno1":2.4787},
+#'     {"data":[{"1_40055","1",40055,2.4787},
+#'              {"1_87283","1",87283,2.4787},
 #'              ...
-#'              {"id":"1_134512","chr":"1","pos":134512,"pheno1":2.4787}
+#'              {"1_134512","1",134512,:2.4787}
 #'             ]}
 #'
 #* @get /lodscan/mrna
@@ -235,8 +235,11 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
                    cores=num_cores, 
                    reml=TRUE))
     
-    # return the data
-    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp))
+    # construct a 2 dimensional array of data
+    temp_data <- data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp)
+    # setting colnames to NULL removes the names in the JSON and return an array
+    colnames(temp_data) <- NULL
+    to_return <- list(data=temp_data)
     
     # stop the clock
     elapsed <- proc.time() - ptm
@@ -263,12 +266,11 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
 #' pheno1: numeric
 #'
 #' Example:
-#'     {"data":[{"id":"1_40055","chr":"1","pos":40055,"pheno1":2.4787},
-#'              {"id":"1_87283","chr":"1","pos":87283,"pheno1":2.4787},
+#'     {"data":[{"1_40055","1",40055,2.4787},
+#'              {"1_87283","1",87283,2.4787},
 #'              ...
-#'              {"id":"1_134512","chr":"1","pos":134512,"pheno1":2.4787}
+#'              {"1_134512","1",134512,:2.4787}
 #'             ]}
-#'
 #'
 #* @get /lodscan/protein
 #* @post /lodscan/protein
@@ -306,8 +308,11 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
                    cores=num_cores, 
                    reml=TRUE))
     
-    # return the data
-    to_return <- list(data=data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp))
+    # construct a 2 dimensional array of data
+    temp_data <- data.table(id=snps$marker, chr=snps$chr, pos=snps$pos, temp)
+    # setting colnames to NULL removes the names in the JSON and return an array
+    colnames(temp_data) <- NULL
+    to_return <- list(data=temp_data)
     
     # stop the clock
     elapsed <- proc.time() - ptm
