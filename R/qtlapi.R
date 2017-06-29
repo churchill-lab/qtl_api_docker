@@ -224,7 +224,7 @@ http_lodscan_mrna <- function(req, res, id, regress_local=FALSE, ncores=0) {
         #addcovar <- cbind(addcovar, genoprobs[,-1,annot.mrna$nearest_snp[idx]])
         mkr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],1])
         chr_tmp = as.character(snps[annot.mrna$nearest_snp[idx],2])
-        addcovar <- cbind(addcovar, probs[,chr_tmp][,-1,mkr_tmp])
+        addcovar <- cbind(addcovar, probs[,chr_tmp][[1]][,-1,mkr_tmp])
     }
  
     # perform the scan using QTL2
@@ -296,8 +296,7 @@ http_lodscan_protein <- function(req, res, id, regress_local=FALSE, ncores=0) {
         #addcovar <- cbind(addcovar, genoprobs[,-1,annot.protein$nearest_snp[idx]])
         mkr_tmp = as.character(snps[annot.protein$nearest_snp[idx],1])
         chr_tmp = as.character(snps[annot.protein$nearest_snp[idx],2])
-        addcovar <- cbind(addcovar, probs[,chr_tmp][,-1,mkr_tmp])
-        
+        addcovar <- cbind(addcovar, probs[,chr_tmp][[1]][,-1,mkr_tmp])        
     }
     
     # perform the scan using QTL2
